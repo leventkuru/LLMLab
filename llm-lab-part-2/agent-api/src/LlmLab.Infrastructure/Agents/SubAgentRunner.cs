@@ -50,6 +50,8 @@ internal sealed class InMemorySubAgentRunner : ISubAgentRunner
         "soru sorma. Cevabın doğrudan sonuç olsun (giriş cümlesi, özür ya da tekrar yazma). Bir araç gerekiyorsa onu ÇAĞIR; " +
         "bir aracın çıktısını asla kendin yazma ya da tahmin etme. Kodu kullanıcı ya da koordinatör çalıştırmayacak: " +
         "\"aşağıdaki kodu çalıştırın\" gibi cümle yazma, kodu SEN çalıştır ve çıktıyı raporla. " +
+        "Çıktıdaki değerleri doğru etiketle: istenen bilgi çıktıda yoksa (ör. platform adı istendi ama yalnızca sürüm " +
+        "yazdırıldı) başka bir değeri o etiketle sunma; bilgiyi doğru işlevle yeniden al ya da elde edilemediğini söyle. " +
         "Araç hata verirse (ör. kütüphane ya da işlev yok) hatayı oku, " +
         "düzelt ve aracı YENİDEN çağır; kod yazıp çalıştırmadan, \"yeniden denemek ister misiniz?\" diye sorarak ya da " +
         "yalnızca kod listesi vererek bitirme. Sonuçta yalnızca aracın gerçekten döndürdüğü çıktıyı raporla; " +

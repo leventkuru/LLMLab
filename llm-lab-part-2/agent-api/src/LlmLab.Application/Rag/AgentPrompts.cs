@@ -39,7 +39,8 @@ public static class AgentPrompts
         "\n\n(Yönlendirme: Bu isteğin herhangi bir kısmını bir alt ajan yapabiliyorsa önce `list_available_agents` ile " +
         "ajanlara bak ve işi ona devret; kendin cevaplama. Önceki cevabındaki kodu ya da sayıları tekrar kullanma, " +
         "aynı işi yeniden devret. Görevi alt ajana kullanıcının isteğine sadık ver: istenmeyen bir şey ekleme, isteneni " +
-        "eksiltme. Sonuçları almadan cevap verme. Sonuçta gerçek bir değer yoksa [hesaplanan değer] gibi yer tutucu " +
+        "eksiltme. Göreve kod ya da komut yazma; NE istendiğini anlat, NASIL yapılacağını alt ajan seçsin. " +
+        "Sonuçları almadan cevap verme. Sonuçta gerçek bir değer yoksa [hesaplanan değer] gibi yer tutucu " +
         "YAZMA; \"sonuç alınamadı\" de ve nedenini söyle.)";
 
     public static string Compose(AgentCapabilities capabilities)

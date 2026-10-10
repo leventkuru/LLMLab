@@ -119,6 +119,7 @@ public class AgentPromptsTests
         Assert.Contains("yeniden devret", r); // takip turunda önceki cevabı tekrar kullanmasın
         Assert.Contains("sadık", r);          // koordinatör görevi kendi başına genişletmesin
         Assert.Contains("yer tutucu", r);     // sonuç yoksa "[hesaplanan değer]" yazmasın
+        Assert.Contains("kod ya da komut yazma", r); // NE istendiğini söylesin, NASIL'ı alt ajan seçsin
     }
 
     [Fact]
