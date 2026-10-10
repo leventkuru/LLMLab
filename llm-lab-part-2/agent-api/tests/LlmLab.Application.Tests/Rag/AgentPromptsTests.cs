@@ -109,6 +109,19 @@ public class AgentPromptsTests
         Assert.DoesNotContain("ULAŞILAMIYOR", prompt);
     }
     [Fact]
+    public void The_per_message_delegation_reminder_points_at_the_listing_tool_and_forbids_answering_alone()
+    {
+        var r = AgentPrompts.DelegationReminder;
+
+        Assert.Contains("`list_available_agents`", r);
+        Assert.Contains("devret", r);
+        Assert.Contains("kendin cevaplama", r);
+        Assert.Contains("yeniden devret", r); // takip turunda önceki cevabı tekrar kullanmasın
+        Assert.Contains("sadık", r);          // koordinatör görevi kendi başına genişletmesin
+        Assert.Contains("yer tutucu", r);     // sonuç yoksa "[hesaplanan değer]" yazmasın
+    }
+
+    [Fact]
     public void Without_any_general_tools_the_tool_paragraph_is_omitted()
     {
         var prompt = AgentPrompts.Compose(new AgentCapabilities(false, false, []));

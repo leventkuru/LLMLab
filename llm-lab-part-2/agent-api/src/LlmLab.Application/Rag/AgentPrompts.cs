@@ -29,6 +29,19 @@ public static class AgentPrompts
 
     public const string NoResults = "Belgelerde bu sorguyla ilgili bir kaynak bulunamadı.";
 
+    /// <summary>
+    /// Devreden ajanda (koordinatör) HER kullanıcı mesajının yanına eklenen kısa yönlendirme. Neden mesajın yanında?
+    /// Ölçüldü: aynı kural sistem talimatındayken ilk turda uygulandı ama takip turunda ("kütüphane olmadan yap")
+    /// model önceki cevabını yeniden yazdı; düşüncesinde alt ajanlardan hiç söz etmedi. Küçük model, uzun konuşmada
+    /// sistem kuralından çok son mesajı ve kendi geçmiş örüntüsünü izliyor; bu yüzden yönlendirme en yakın yere konur.
+    /// </summary>
+    public const string DelegationReminder =
+        "\n\n(Yönlendirme: Bu isteğin herhangi bir kısmını bir alt ajan yapabiliyorsa önce `list_available_agents` ile " +
+        "ajanlara bak ve işi ona devret; kendin cevaplama. Önceki cevabındaki kodu ya da sayıları tekrar kullanma, " +
+        "aynı işi yeniden devret. Görevi alt ajana kullanıcının isteğine sadık ver: istenmeyen bir şey ekleme, isteneni " +
+        "eksiltme. Sonuçları almadan cevap verme. Sonuçta gerçek bir değer yoksa [hesaplanan değer] gibi yer tutucu " +
+        "YAZMA; \"sonuç alınamadı\" de ve nedenini söyle.)";
+
     public static string Compose(AgentCapabilities capabilities)
     {
         var sb = new StringBuilder("Sen yardımsever bir asistansın. Türkçe, kısa ve net cevap ver.");

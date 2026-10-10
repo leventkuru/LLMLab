@@ -126,7 +126,10 @@ internal sealed class MafChatAgent : ILocalChatAgent
             },
         };
 
-        var input = new List<ChatMessage> { new(ChatRole.User, request.Message) };
+        // Devreden ajanda kullanıcının mesajına kısa bir "önce devretmeyi düşün" yönlendirmesi eklenir (neden:
+        // AgentPrompts.DelegationReminder). Arayüzdeki transkript asıl mesajı tutar; yönlendirme yalnızca modele gider.
+        var userText = profile.CanDelegate ? request.Message + AgentPrompts.DelegationReminder : request.Message;
+        var input = new List<ChatMessage> { new(ChatRole.User, userText) };
 
         // 4) Çalıştır ve olayları dışarı ver.
         //

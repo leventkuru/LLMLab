@@ -251,6 +251,11 @@ Ajanlar **veridir** (`AgentDefinitions` tablosu): kimlik, ad, açıklama, rol ta
      çağrıya çevirir.
   4. *Koordinatör kuralları koddadır:* "kendin hesap/kod/belge yapamazsın, alt ajana devret, çıktısı olmayan koddan sayı
      yazma" kayıt defterindeki rol metnine bağlı değildir.
+  5. *Takip turunda devretmeyi unutma:* aynı kural sistem talimatındayken ilk turda uygulanıyor, takip turunda ("kütüphane
+     olmadan yap") model önceki cevabını yeniden yazıyor ve devretmeyi hiç düşünmüyordu (düşünme metninde gözlendi).
+     Koordinatörde her kullanıcı mesajının yanına kısa bir yönlendirme eklenir (`AgentPrompts.DelegationReminder`: "bir
+     alt ajan yapabiliyorsa önce ona devret, önceki cevabı tekrar kullanma"). Yalnızca modele gider; transkript asıl
+     mesajı tutar. Ölçüm: 3/3 konuşmada takip turunda devretti (öncesinde 0/1).
 - **Hâlâ geçerli sınır:** 8B model, araç hata verdikten (ör. numpy yok) sonra bazen yeniden denemeden bırakıyor; koordinatör
   bu durumda dürüstçe "çıktı alınamadı" demeli, ama %100 değildir. Ölçüm: 3 denemede alt ajanlar her seferinde `run_python`'u
   çağırdı; biri gerçek çıktı üretti, ikisi numpy hatasından sonra kod listesiyle bitti.

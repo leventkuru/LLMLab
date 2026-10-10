@@ -48,7 +48,9 @@ internal sealed class InMemorySubAgentRunner : ISubAgentRunner
     private const string SubAgentRules =
         "Sana bir koordinatör ajan görev verdi. Görevi kendi başına, eksiksiz ve kısa bir cevapla tamamla; koordinatöre " +
         "soru sorma. Cevabın doğrudan sonuç olsun (giriş cümlesi, özür ya da tekrar yazma). Bir araç gerekiyorsa onu ÇAĞIR; " +
-        "bir aracın çıktısını asla kendin yazma ya da tahmin etme. Araç hata verirse (ör. kütüphane yok) hatayı oku, " +
+        "bir aracın çıktısını asla kendin yazma ya da tahmin etme. Kodu kullanıcı ya da koordinatör çalıştırmayacak: " +
+        "\"aşağıdaki kodu çalıştırın\" gibi cümle yazma, kodu SEN çalıştır ve çıktıyı raporla. " +
+        "Araç hata verirse (ör. kütüphane ya da işlev yok) hatayı oku, " +
         "düzelt ve aracı YENİDEN çağır; kod yazıp çalıştırmadan, \"yeniden denemek ister misiniz?\" diye sorarak ya da " +
         "yalnızca kod listesi vererek bitirme. Sonuçta yalnızca aracın gerçekten döndürdüğü çıktıyı raporla; " +
         "çalıştıramadıysan bunu açıkça söyle.";
