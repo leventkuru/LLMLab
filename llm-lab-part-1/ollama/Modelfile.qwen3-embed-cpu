@@ -1,0 +1,14 @@
+# qwen3-embedding:0.6b'nin CPU'da çalışan varyantı (aynı ağırlıklar, yeni indirme yok).
+#
+# Neden: 8 GB'lık ekran kartında sohbet modeli (qwen3:8b, 5,8 GB) ile embedding modeli yan yana GPU'ya
+# yüklenince kart dolar ve sohbet hızı 42 -> 6-9 token/sn'ye düşer (ölçüldü). Embedding'i CPU'ya almak
+# sohbet hızını korur (38-43 token/sn); embedding'in kendisi CPU'da da hızlıdır (sorgu başına ~90 ms).
+#
+# Oluşturmak için:  ollama create qwen3-embed-cpu -f ollama/Modelfile.qwen3-embed-cpu
+FROM qwen3-embedding:0.6b
+
+# 0 = hiçbir katmanı GPU'ya yükleme
+PARAMETER num_gpu 0
+
+# Parçalarımız ~200-350 token; varsayılan 4096 bağlam gereksiz bellek tutar.
+PARAMETER num_ctx 1024

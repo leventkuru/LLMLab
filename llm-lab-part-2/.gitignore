@@ -1,0 +1,11 @@
+.env
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+
+# Bu stack'in konusu dışındaki yardımcı/deneme klasörleri (py-chat, rag-eval)
+.temp/
+
+# Değerlendirme hattı çıktıları
+agent-api/evals/results/

@@ -1,0 +1,149 @@
+# llm-lab yığınının Kubernetes (kind) manifesti.
+# Gizli bilgiler burada YOK: "mssql" Secret'ı deploy.ps1 tarafından .env dosyasından oluşturulur.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: llm-lab
+---
+# ---- Veritabanı: SQL Server (durum tuttuğu için StatefulSet + kalıcı disk) ----
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql
+  namespace: llm-lab
+spec:
+  serviceName: mssql
+  replicas: 1
+  selector:
+    matchLabels: { app: mssql }
+  template:
+    metadata:
+      labels: { app: mssql }
+    spec:
+      securityContext:
+        fsGroup: 10001 # SQL Server'ın (mssql kullanıcısı) diske yazabilmesi için
+      containers:
+        - name: mssql
+          image: mcr.microsoft.com/mssql/server:2025-latest
+          ports:
+            - containerPort: 1433
+          env:
+            - name: MSSQL_PID
+              value: Developer
+          envFrom:
+            - secretRef:
+                name: mssql # MSSQL_SA_PASSWORD ve ACCEPT_EULA buradan gelir
+          resources:
+            requests: { memory: 2Gi, cpu: 250m }
+            limits: { memory: 3Gi }
+          readinessProbe:
+            tcpSocket: { port: 1433 }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          volumeMounts:
+            - name: data
+              mountPath: /var/opt/mssql
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mssql
+  namespace: llm-lab
+spec:
+  selector: { app: mssql }
+  ports:
+    - port: 1433
+---
+# ---- API ----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: llmapi
+  namespace: llm-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: llmapi }
+  template:
+    metadata:
+      labels: { app: llmapi }
+    spec:
+      containers:
+        - name: llmapi
+          image: llm-lab/llmapi:dev
+          imagePullPolicy: IfNotPresent # imaj registry'den değil, "kind load" ile düğüme yüklenir
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SA_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: mssql, key: MSSQL_SA_PASSWORD }
+            - name: MigrateOnStartup
+              value: "true"
+            # $(SA_PASSWORD): Kubernetes, yukarıda tanımlı değişkeni buraya yerleştirir.
+            - name: ConnectionStrings__Chat
+              value: Server=mssql;Database=LlmLab;User Id=sa;Password=$(SA_PASSWORD);TrustServerCertificate=True
+            # Ollama Windows ana makinesinde (GPU orada); kind düğümü bir Docker konteyneri olduğu
+            # için ana makineye host.docker.internal ile ulaşır.
+            - name: Ollama__BaseUrl
+              value: http://host.docker.internal:11434
+          readinessProbe:
+            httpGet: { path: /, port: 8080 }
+            periodSeconds: 5
+          resources:
+            requests: { memory: 128Mi, cpu: 100m }
+            limits: { memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: llmapi # nginx.conf'taki "llmapi" adı bu servise çözülür
+  namespace: llm-lab
+spec:
+  selector: { app: llmapi }
+  ports:
+    - port: 8080
+---
+# ---- Web (nginx + React derlemesi; /api isteklerini llmapi'ye yönlendirir) ----
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: llm-lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: web }
+  template:
+    metadata:
+      labels: { app: web }
+    spec:
+      containers:
+        - name: web
+          image: llm-lab/web:dev
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+          resources:
+            requests: { memory: 32Mi, cpu: 10m }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: llm-lab
+spec:
+  selector: { app: web }
+  ports:
+    - port: 80

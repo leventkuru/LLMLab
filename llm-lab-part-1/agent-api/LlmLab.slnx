@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LlmLab.Api/LlmLab.Api.csproj" />
+    <Project Path="src/LlmLab.Application/LlmLab.Application.csproj" />
+    <Project Path="src/LlmLab.Domain/LlmLab.Domain.csproj" />
+    <Project Path="src/LlmLab.Infrastructure/LlmLab.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LlmLab.Application.Tests/LlmLab.Application.Tests.csproj" />
+  </Folder>
+</Solution>

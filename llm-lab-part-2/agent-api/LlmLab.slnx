@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LlmLab.AgentHost/LlmLab.AgentHost.csproj" />
+    <Project Path="src/LlmLab.Api/LlmLab.Api.csproj" />
+    <Project Path="src/LlmLab.Application/LlmLab.Application.csproj" />
+    <Project Path="src/LlmLab.Domain/LlmLab.Domain.csproj" />
+    <Project Path="src/LlmLab.Infrastructure/LlmLab.Infrastructure.csproj" />
+    <Project Path="src/LlmLab.Mcp.Documents/LlmLab.Mcp.Documents.csproj" />
+    <Project Path="src/LlmLab.Mcp.Sandbox/LlmLab.Mcp.Sandbox.csproj" />
+    <Project Path="src/LlmLab.Mcp.Tools/LlmLab.Mcp.Tools.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LlmLab.Application.Tests/LlmLab.Application.Tests.csproj" />
+    <Project Path="tests/LlmLab.Mcp.Tests/LlmLab.Mcp.Tests.csproj" />
+  </Folder>
+  <Folder Name="/evals/">
+    <Project Path="evals/LlmLab.Evals/LlmLab.Evals.csproj" />
+  </Folder>
+</Solution>

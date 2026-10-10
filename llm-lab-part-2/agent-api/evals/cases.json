@@ -1,0 +1,111 @@
+[
+  {
+    "id": "greeting-no-tools",
+    "question": "Merhaba!",
+    "agent": "assistant",
+    "useDocuments": true,
+    "tags": ["smoke", "tools"],
+    "checks": {
+      "mustNotCallTools": ["search_documents", "list_documents", "calculate", "run_python"],
+      "mustHaveNoSources": true,
+      "maxSeconds": 30
+    },
+    "rubric": "Kısa ve nazik bir selamlama. Belge ya da araç kullanmaya gerek yok; uydurma bilgi vermemeli."
+  },
+  {
+    "id": "time-uses-tool",
+    "question": "Şu an saat kaç ve bugün haftanın hangi günü?",
+    "agent": "assistant",
+    "tags": ["smoke", "tools", "mcp"],
+    "checks": {
+      "mustCallTools": ["get_current_time"],
+      "answerMustNotContain": ["[1]", "[2]"],
+      "answerMustMatch": "(pazartesi|salı|çarşamba|perşembe|cuma|cumartesi|pazar)"
+    },
+    "rubric": "Saat ve gün araçtan alınmış olmalı; cevap saat:dakika biçiminde bir saat ve bir gün adı içermeli. Kaynak numarası olmamalı."
+  },
+  {
+    "id": "calc-uses-tool",
+    "question": "12.5 * 4 + 7 işleminin sonucu kaç?",
+    "agent": "analyst",
+    "tags": ["smoke", "tools", "calc"],
+    "checks": {
+      "mustCallTools": ["calculate"],
+      "answerMustContain": ["57"]
+    },
+    "reference": "Sonuç 57.",
+    "rubric": "Sonuç 57 olmalı ve hesap araçla yapılmış olmalı."
+  },
+  {
+    "id": "docs-off-is-honest",
+    "question": "Belgelerimde izin politikası hakkında ne yazıyor?",
+    "agent": "assistant",
+    "useDocuments": false,
+    "tags": ["docs", "honesty"],
+    "checks": {
+      "mustNotCallTools": ["search_documents"],
+      "mustHaveNoSources": true,
+      "answerMustNotContain": ["[1]"]
+    },
+    "rubric": "Belgelere erişimi olmadığını açıkça söylemeli ve kullanıcıya Belgeler özelliğini açmasını ya da belgelere erişebilen bir ajan seçmesini önermeli. Belge içeriği uydurmamalı, 'kontrol ediyorum' demeden dürüst olmalı."
+  },
+  {
+    "id": "list-documents",
+    "question": "Hangi belgelerim yüklü?",
+    "agent": "assistant",
+    "useDocuments": true,
+    "tags": ["docs", "mcp"],
+    "checks": {
+      "mustCallTools": ["list_documents"]
+    },
+    "rubric": "Yüklü belgelerin adlarını araç sonucuna uygun biçimde listelemeli; olmayan belge adı uydurmamalı."
+  },
+  {
+    "id": "doc-question-grounded",
+    "question": "Bu çalışmada foveation neden kullanılıyor?",
+    "agent": "researcher",
+    "useDocuments": true,
+    "tags": ["docs", "rag"],
+    "checks": {
+      "mustCallTools": ["search_documents"],
+      "mustHaveSources": true
+    },
+    "rubric": "Cevap, kaynaklarda anlatılan nedene dayanmalı (foveation: insan görmesindeki gibi merkezde yüksek, çevrede düşük çözünürlük). Kaynaklarda olmayan bilgi eklememeli ve [n] atıfı kullanmalı."
+  },
+  {
+    "id": "unanswerable-from-docs",
+    "question": "Belgelerde şirketin 2030 yılı satış hedefi nedir?",
+    "agent": "researcher",
+    "useDocuments": true,
+    "tags": ["docs", "rag", "honesty"],
+    "checks": {
+      "mustCallTools": ["search_documents"]
+    },
+    "rubric": "Belgelerde bu bilgi yoksa bunu açıkça söylemeli ('bulamadım' gibi); sayı ya da hedef UYDURMAMALI."
+  },
+  {
+    "id": "coder-runs-code",
+    "question": "Python ile 1'den 10'a kadar sayıların toplamını hesapla ve kodu çalıştırarak sonucu göster.",
+    "agent": "coder",
+    "tags": ["sandbox"],
+    "checks": {
+      "mustCallTools": ["run_python"],
+      "answerMustContain": ["55"]
+    },
+    "reference": "Toplam 55.",
+    "rubric": "Kod gerçekten çalıştırılmış olmalı ve çıktı 55 olarak raporlanmalı."
+  },
+  {
+    "id": "coordinator-delegates",
+    "question": "Analist ajana 15 çarpı 7 işlemini hesaplat ve sonucu söyle.",
+    "agent": "coordinator",
+    "tags": ["multi-agent"],
+    "checks": {
+      "mustCallTools": ["start_subagent", "get_subagent_result"],
+      "mustNotCallTools": ["calculate"],
+      "answerMustContain": ["105"]
+    },
+    "reference": "15 x 7 = 105.",
+    "rubric": "Koordinatör işi alt ajana devretmeli (kendisi hesaplamamalı) ve sonucu 105 olarak aktarmalı."
+  }
+]

@@ -1,0 +1,18 @@
+<Project>
+  <!-- Çözümdeki tüm projeler için ortak kurallar. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Uyarılar hata sayılır: sessizce biriken uyarı kalmaz. NuGet güvenlik uyarıları (NU1901-NU1904) dahildir:
+         bilinen açığı olan bir paket derlemeyi durdurur (bkz. Microsoft.OpenApi olayı). -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+
+    <!-- Dışarıya açık türlerde XML belge eksikliği uyarısı üretme (belgeler zorunlu değil, yalnızca yararlı). -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+</Project>

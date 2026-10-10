@@ -1,0 +1,45 @@
+# Yerel yığın: SQL Server + API + web. Çalıştır: docker compose up -d --build
+# Ollama konteynerde değil, Windows ana makinesinde çalışır (GPU'ya erişmesi için).
+name: llm-lab
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    environment:
+      # Lisans şartlarını okuyup kabul ettiğinizi .env içinde ACCEPT_EULA=Y yazarak siz bildirirsiniz.
+      ACCEPT_EULA: ${ACCEPT_EULA:?SQL Server lisansını kabul etmek için .env içinde ACCEPT_EULA=Y yazın}
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?.env içinde MSSQL_SA_PASSWORD tanımlı olmalı}
+    volumes:
+      - mssql-data:/var/opt/mssql # sohbetler konteyner silinse de kalır
+    # Port yayınlamıyoruz: ana makinede zaten yerel SQL Server 1433'te çalışıyor.
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 20s
+
+  llmapi:
+    build: ./LlmApi
+    image: llm-lab/llmapi:dev
+    depends_on:
+      mssql:
+        condition: service_healthy # veritabanı hazır olmadan API (ve migration) başlamaz
+    environment:
+      MigrateOnStartup: "true"
+      # Windows kimlik doğrulaması konteynerde çalışmaz; SQL kimlik doğrulaması kullanılır.
+      ConnectionStrings__Chat: Server=mssql;Database=LlmLab;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True
+      Ollama__BaseUrl: http://host.docker.internal:11434
+    restart: on-failure
+
+  web:
+    build: ./web
+    image: llm-lab/web:dev
+    depends_on:
+      - llmapi
+    ports:
+      - "8080:80" # http://localhost:8080 (5173 ve 5080 geliştirme sunucularına ayrılmış)
+
+volumes:
+  mssql-data:

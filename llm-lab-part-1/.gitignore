@@ -1,0 +1,8 @@
+.env
+**/bin/
+**/obj/
+**/node_modules/
+**/dist/
+
+# Bu stack'in konusu d???ndaki yard?mc?/deneme klas?rleri (py-chat, rag-eval)
+.temp/
