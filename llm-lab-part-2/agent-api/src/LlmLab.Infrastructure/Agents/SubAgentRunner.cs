@@ -40,6 +40,11 @@ public sealed class SubAgentOptions
 /// </summary>
 internal sealed class InMemorySubAgentRunner : ISubAgentRunner
 {
+    private const string CodeToolName = "run_python";
+
+    /// <summary>Ajanın kod çalıştırma aracı olabilir mi? (İzin listesi boşsa tüm araçlar demektir.)</summary>
+    private static bool CanRunCode(AgentProfile p) => p.AllowedTools.Count == 0 || p.AllowedTools.Contains(CodeToolName);
+
     private const string SubAgentRules =
         "Sana bir koordinatör ajan görev verdi. Görevi kendi başına, eksiksiz ve kısa bir cevapla tamamla; koordinatöre " +
         "soru sorma. Cevabın doğrudan sonuç olsun (giriş cümlesi, özür ya da tekrar yazma). Bir araç gerekiyorsa onu ÇAĞIR; " +
@@ -168,13 +173,38 @@ internal sealed class InMemorySubAgentRunner : ISubAgentRunner
                 await using var scope = _scopes.CreateAsyncScope();
                 var chat = scope.ServiceProvider.GetRequiredService<IChatAgent>();
 
-                var text = new StringBuilder();
                 // Alt ajan "Belgeler" özelliğiyle çalışır; hangi belge araçlarını görebileceğini ajanın izin listesi belirler.
-                var request = new AgentRequest(job.Task, null, Think: false, UseDocuments: true, profile, SubAgentRules);
-                await foreach (var evt in chat.RunAsync(request, timeout.Token))
+                var message = job.Task;
+                string? sessionState = null;
+                var text = new StringBuilder();
+
+                // En çok bir "kodu çalıştır" düzeltme turu: küçük model kodu yazıp ÇALIŞTIRMADAN bitirebiliyor ve
+                // çıktıyı koordinatör uyduruyor (gözlendi). Güvence: kod listesi var ama run_python çağrılmadıysa bir kez hatırlat.
+                for (var pass = 0; ; pass++)
                 {
-                    if (evt is TextDelta t) text.Append(t.Text);
-                    else if (evt is ToolInvoked tool) job.AddToolCall(tool.Name);
+                    text.Clear();
+                    var ranCode = false;
+                    var request = new AgentRequest(message, sessionState, Think: false, UseDocuments: true, profile, SubAgentRules);
+                    await foreach (var evt in chat.RunAsync(request, timeout.Token))
+                    {
+                        if (evt is TextDelta t) text.Append(t.Text);
+                        else if (evt is ToolInvoked tool)
+                        {
+                            job.AddToolCall(tool.Name);
+                            ranCode |= tool.Name == CodeToolName;
+                        }
+                        else if (evt is SessionSaved saved) sessionState = saved.State;
+                    }
+
+                    if (pass == 0 && !ranCode && CanRunCode(profile) && text.ToString().Contains("```", StringComparison.Ordinal))
+                    {
+                        _log.LogWarning("Alt ajan {Agent} kodu çalıştırmadan bitirdi; {Tool} çağırması hatırlatılıyor.", profile.Id, CodeToolName);
+                        message = $"Kodu henüz ÇALIŞTIRMADIN; yazdığın çıktı gerçek değildir. Şimdi {CodeToolName} aracını çağırarak " +
+                                  "kodu çalıştır (numpy gibi bir kütüphane yoksa standart kütüphaneyle) ve YALNIZCA aracın " +
+                                  "döndürdüğü çıktıyı raporla.";
+                        continue;
+                    }
+                    break;
                 }
 
                 var result = text.ToString().Trim();
