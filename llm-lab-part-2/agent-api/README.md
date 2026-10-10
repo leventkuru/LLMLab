@@ -241,6 +241,19 @@ Ajanlar **veridir** (`AgentDefinitions` tablosu): kimlik, ad, açıklama, rol ta
 300 sn, sonuç 6000 karakterle sınırlı. Sonuç koordinatöre `<altajan_sonucu>` etiketiyle **veri** olarak verilir.
 `GET /subagents` ve `POST /subagents/{id}/stop` ile dışarıdan izlenir/durdurulur.
 
+- **Güvenceler (kullanıcı ekran görüntüsüyle yakalanan hatalardan sonra eklendi; hepsi testlidir):**
+  1. *Sonucu almadan cevaplama:* koordinatör görevleri başlatıp `get_subagent_result` çağırmadan cevap yazarsa (ve sonucu
+     uydurursa) o metin atılır, bekleyen görevlerin sonuçlarını sistem alır ve modele verir (arayüzde "sistem aldı" satırı).
+     Bu yüzden koordinatörde cevap metni tamponlanır (düşünme ve araç satırları yine canlı akar).
+  2. *Kod yazıp çalıştırmama:* alt ajan kod listesi verip `run_python` çağırmadan bitirirse bir kez "çalıştır" hatırlatılır.
+  3. *Düz metin araç çağrısı:* qwen3:8b bazen `run_python {"code": ...}` gibi bir çağrıyı yapılandırılmış çağrı yerine metin
+     olarak yazar; araç hiç çalışmaz. `TextToolCallRecoveryClient` bunu (yalnızca bilinen araç adı + geçerli JSON ise) gerçek
+     çağrıya çevirir.
+  4. *Koordinatör kuralları koddadır:* "kendin hesap/kod/belge yapamazsın, alt ajana devret, çıktısı olmayan koddan sayı
+     yazma" kayıt defterindeki rol metnine bağlı değildir.
+- **Hâlâ geçerli sınır:** 8B model, araç hata verdikten (ör. numpy yok) sonra bazen yeniden denemeden bırakıyor; koordinatör
+  bu durumda dürüstçe "çıktı alınamadı" demeli, ama %100 değildir. Ölçüm: 3 denemede alt ajanlar her seferinde `run_python`'u
+  çağırdı; biri gerçek çıktı üretti, ikisi numpy hatasından sonra kod listesiyle bitti.
 - **Port arkasında:** koordinatör `ISubAgentRunner`'ı bilir; faz 3'te aynı port Dapr (iş akışı + aktör) ile uygulanır.
 - **Sınır:** görevler bellektedir; API yeniden başlarsa kaybolur ve yarım kalan iş devam etmez.
 - Koordinatör alt ajan olamaz (özyineleme önlenir); alt ajanlar araçlarını kendi izin listelerinden alır.
